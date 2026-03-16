@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 # =========================
 # 读取 txt 文件
 df = pd.read_csv(
-    "Sentences_50Agree.txt",
+    "data/Sentences_50Agree.txt",
     sep="@",
     header=None,
     names=["sentence", "label"],

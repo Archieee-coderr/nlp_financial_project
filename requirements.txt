@@ -1,5 +1,7 @@
-datasets
-sentence-transformers
-scikit-learn
-matplotlib
-seaborn
+datasets==2.18.0
+sentence-transformers==2.5.1
+scikit-learn==1.4.1
+matplotlib==3.8.3
+seaborn==0.13.2
+numpy==1.26.4
+pandas==2.2.1
