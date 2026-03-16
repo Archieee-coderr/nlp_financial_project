@@ -2,8 +2,8 @@
 # 1. 导入库
 # =========================
 import pandas as pd
+import numpy as np
 from sentence_transformers import SentenceTransformer
-
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -17,6 +17,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 
 # =========================
 # 2. 加载 & 清洗数据
@@ -54,9 +55,58 @@ embeddings = model.encode(sentences, show_progress_bar=True)
 
 print("Embedding shape:", embeddings.shape)
 
+# =========================
+# 4. 数据分析
+# =========================
+print("\n===== Data Analysis =====")
+
+# 4.1 类别分布
+print("\nLabel Distribution:")
+print(df["label_id"].value_counts())
+
+plt.figure(figsize=(5,4))
+sns.countplot(x=df["label_id"])
+plt.title("Label Distribution")
+plt.xlabel("Label")
+plt.ylabel("Count")
+plt.show()
+
+# 4.2 句子长度分布
+df["length"] = df["sentence"].str.split().apply(len)
+
+print("\nSentence Length Statistics by Class:")
+print(df.groupby("label_id")["length"].describe())
+
+plt.figure(figsize=(6,4))
+sns.boxplot(x=df["label_id"], y=df["length"])
+plt.title("Sentence Length Distribution by Class")
+plt.xlabel("Label")
+plt.ylabel("Sentence Length")
+plt.show()
+
+# 4.3 每类 embedding 的均值向量
+mean_vecs = {}
+for label in [0, 1, 2]:
+    mean_vecs[label] = embeddings[df["label_id"] == label].mean(axis=0)
+
+# 计算类中心距离
+dist_01 = np.linalg.norm(mean_vecs[0] - mean_vecs[1])
+dist_02 = np.linalg.norm(mean_vecs[0] - mean_vecs[2])
+dist_12 = np.linalg.norm(mean_vecs[1] - mean_vecs[2])
+
+print("\nMean Vector Distances:")
+print(f"Negative vs Neutral: {dist_01:.4f}")
+print(f"Negative vs Positive: {dist_02:.4f}")
+print(f"Neutral vs Positive: {dist_12:.4f}")
+
+# 4.4 每类 embedding 的方差
+print("\nEmbedding Variance by Class:")
+for label in [0, 1, 2]:
+    var = np.var(embeddings[df["label_id"] == label], axis=0).mean()
+    print(f"Label {label}: {var:.6f}")
 
 # =========================
-# 4. 可视化（PCA / t-SNE）
+# 5. 可视化（PCA / t-SNE）
 # =========================
 # PCA 降维到 2 维
 pca = PCA(n_components=2)
@@ -85,20 +135,36 @@ pca_50 = PCA(n_components=50)
 embeddings_50 = pca_50.fit_transform(embeddings)
 
 # 再做 t-SNE
+
 tsne = TSNE(n_components=2, perplexity=30, random_state=42)
 tsne_result = tsne.fit_transform(embeddings_50)
+# plt.figure(figsize=(8, 6))
+# scatter = plt.scatter(
+#     tsne_result[:, 0],
+#     tsne_result[:, 1],
+#     c=df["label_id"],
+#     cmap="viridis",
+#     alpha=0.7
+# )
+# plt.title("t-SNE Visualization of Financial PhraseBank Embeddings")
+# plt.colorbar(scatter, ticks=[0, 1, 2], label="label_id")
+# plt.show()
 plt.figure(figsize=(8, 6))
 scatter = plt.scatter(
     tsne_result[:, 0],
     tsne_result[:, 1],
     c=df["label_id"],
-    cmap="viridis",
-    alpha=0.7
+    cmap="tab10",        # 更适合分类
+    s=8,                 # 更小的点
+    alpha=0.6            # 更高透明度
 )
 
 plt.title("t-SNE Visualization of Financial PhraseBank Embeddings")
 plt.colorbar(scatter, ticks=[0, 1, 2], label="label_id")
+plt.tight_layout()
 plt.show()
+
+
 
 # 定义混淆矩阵函数
 def plot_confusion_matrix(y_true, y_pred, title):
@@ -113,7 +179,7 @@ def plot_confusion_matrix(y_true, y_pred, title):
     plt.show()
 
 # =========================
-# 5. 训练 Logistic Regression
+# 6. 训练 Logistic Regression
 # =========================
 
 # 划分训练集 / 测试集
@@ -135,7 +201,7 @@ plot_confusion_matrix(y_test, y_pred, "Confusion Matrix - Logistic Regression")
 
 
 # =========================
-# 6. 训练 Linear SVM
+# 7. 训练 Linear SVM
 # =========================
 svm_clf = LinearSVC()
 svm_clf.fit(X_train, y_train)
@@ -150,7 +216,7 @@ plot_confusion_matrix(y_test, y_pred_svm, "Confusion Matrix - Linear SVM")
 
 
 # =========================
-# 7. 训练 RBF SVM
+# 8. 训练 RBF SVM
 # =========================
 # 1) PCA 降维到 50 维
 pca = PCA(n_components=50, random_state=42)
@@ -175,7 +241,7 @@ plot_confusion_matrix(y_test_rbf, y_pred_rbf, "Confusion Matrix - RBF SVM")
 
 
 # =========================
-# 8. 训练 Random Forest
+# 9. 训练 Random Forest
 # =========================
 rf_clf = RandomForestClassifier(
     n_estimators=300,
@@ -194,7 +260,7 @@ print("\nRandom Forest Classification Report:\n", classification_report(y_test, 
 plot_confusion_matrix(y_test, y_pred_rf, "Confusion Matrix - Random Forest")
 
 # =========================
-# 9. 训练 Naive Bayes
+# 10. 训练 Naive Bayes
 # =========================
 nb_clf = GaussianNB()
 nb_clf.fit(X_train, y_train)
