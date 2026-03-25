@@ -4,23 +4,24 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from bert_trainer import run_bert_finetuning
 
-from Embeddings import get_minilm_embeddings, get_finbert_embeddings
-from Classifiers import run_all_classifiers
+# from Embeddings import get_minilm_embeddings, get_finbert_embeddings
+# from Classifiers import run_all_classifiers
 
 
 # =========================
 # 配置：在这里切换模型
 # =========================
 # 可选值："minilm" 或 "finbert" 或 "both"
-EMBEDDING_MODEL = "both"
+# # EMBEDDING_MODEL = "both"
 
 
 # =========================
 # 1. 加载 & 清洗数据
 # =========================
 df = pd.read_csv(
-    "data/Sentences_75Agree.txt",
+    "data/Sentences_AllAgree.txt",
     sep="@",
     header=None,
     names=["sentence", "label"],
@@ -104,29 +105,32 @@ def run_data_analysis(df_orig, embeddings, model_name):
 # =========================
 # 3. 汇总对比
 # =========================
-def print_summary(all_results: dict):
-    print("\n" + "=" * 60)
-    print("  FINAL COMPARISON SUMMARY")
-    print("=" * 60)
-    for model_name, results in all_results.items():
-        print(f"\n{model_name}:")
-        for r in results:
-            print(f"  {r['model']:<45} Accuracy: {r['accuracy']:.4f}")
+# def print_summary(all_results: dict):
+#     print("\n" + "=" * 60)
+#     print("  FINAL COMPARISON SUMMARY")
+#     print("=" * 60)
+#     for model_name, results in all_results.items():
+#         print(f"\n{model_name}:")
+#         for r in results:
+#             print(f"  {r['model']:<45} Accuracy: {r['accuracy']:.4f}")
 
 
 # =========================
 # 4. 主流程
 # =========================
-all_results = {}
+# all_results = {}
 
-if EMBEDDING_MODEL in ("minilm", "both"):
-    embeddings_minilm = get_minilm_embeddings(sentences)
-    run_data_analysis(df, embeddings_minilm, "MiniLM")
-    all_results["MiniLM"] = run_all_classifiers(embeddings_minilm, labels, "MiniLM")
+# if EMBEDDING_MODEL in ("minilm", "both"):
+#     embeddings_minilm = get_minilm_embeddings(sentences)
+#     run_data_analysis(df, embeddings_minilm, "MiniLM")
+#     all_results["MiniLM"] = run_all_classifiers(embeddings_minilm, labels, "MiniLM")
 
-if EMBEDDING_MODEL in ("finbert", "both"):
-    embeddings_finbert = get_finbert_embeddings(sentences)
-    run_data_analysis(df, embeddings_finbert, "FinBERT")
-    all_results["FinBERT"] = run_all_classifiers(embeddings_finbert, labels, "FinBERT")
+# if EMBEDDING_MODEL in ("finbert", "both"):
+#     embeddings_finbert = get_finbert_embeddings(sentences)
+#     run_data_analysis(df, embeddings_finbert, "FinBERT")
+#     all_results["FinBERT"] = run_all_classifiers(embeddings_finbert, labels, "FinBERT")
 
-print_summary(all_results)
+# print_summary(all_results)
+print("\n===== Running BERT Fine-tuning =====")
+
+results = run_bert_finetuning(sentences, labels)

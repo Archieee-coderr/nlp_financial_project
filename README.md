@@ -625,3 +625,54 @@ Naive Bayes
   Positive (2)          0.84    0.86      0.85      273
   macro avg             0.86    0.90      0.88      970
 ```
+
+
+
+
+
+# **FinBERT Fine‑tuning Experiment**
+
+## **Overview**
+
+In addition to the frozen‑embedding experiments conducted earlier, we further evaluate FinBERT under a full **end‑to‑end fine‑tuning** setting.
+ This experiment aims to measure the upper‑bound performance of FinBERT when all transformer parameters are updated on the Financial PhraseBank dataset.
+
+Fine‑tuning is performed on the All Agree subset.
+
+------
+
+## **Training Progress**
+
+Validation performance after each epoch is shown below:
+
+| Epoch | Accuracy   | F1-score   | Precision  | Recall     | Eval Loss |
+| ----- | ---------- | ---------- | ---------- | ---------- | --------- |
+| 1     | 0.9581     | 0.9583     | 0.9597     | 0.9581     | 0.1246    |
+| 2     | 0.9735     | 0.9736     | 0.9737     | 0.9735     | 0.0858    |
+| 3     | **0.9779** | **0.9780** | **0.9781** | **0.9779** | 0.0706    |
+
+------
+
+## **Final Evaluation**
+
+After fine‑tuning, the model achieves the following results on the held‑out test set:
+
+```
+eval_loss: 0.0706
+eval_accuracy: 0.9779
+eval_f1: 0.9780
+eval_precision: 0.9781
+eval_recall: 0.9779
+```
+
+------
+
+## **Comparison with Frozen‑Embedding Results**
+
+To contextualize the fine‑tuning performance, we compare it with the best frozen‑embedding configuration (FinBERT + Linear SVM):
+
+| Method                            | Accuracy (All Agree) |
+| --------------------------------- | -------------------- |
+| **Frozen FinBERT + Linear SVM**   | **99.34%**           |
+| **Fine‑tuned FinBERT (3 epochs)** | **97.79%**           |
+
